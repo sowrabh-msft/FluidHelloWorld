@@ -15,6 +15,9 @@
     "dependencies": {
         "@fluidframework/azure-client": "^0.48.1",
         "@fluidframework/test-client-utils": "^0.48.1",
+        "adaptive-expressions": "^4.15.0",
+        "adaptivecards": "2.10.0",
+        "adaptivecards-templating": "2.2.0",
         "fluid-framework": "^0.48.1"
     },
     "devDependencies": {
