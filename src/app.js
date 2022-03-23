@@ -8,6 +8,23 @@ import { AzureClient, LOCAL_MODE_TENANT_ID } from "@fluidframework/azure-client"
 import { InsecureTokenProvider } from "@fluidframework/test-client-utils"
 import * as AdaptiveCards from "adaptivecards";
 import * as ACData from "adaptivecards-templating";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
+const express = require("express");
+const app = express();
+app.use(express.json())
+// Define routes here ...
+  
+app.listen(3000, function(){
+  console.log("server is running on port 3000");
+})
+
+app.post("/", function(req, res) {
+    var id = createNewCard(req.body);
+    res.send("Response Received." + req.body);
+  });
+
 
 // The config is set to run against a local service by default. Run `npx tinylicious` to run locally
 // Update the corresponding properties below with your tenant specific information to run against your tenant.
@@ -114,13 +131,12 @@ const cardData = {
 const containerSchema = {
     initialObjects: { cardDataMap: SharedMap }
 };
-const root = document.getElementById("content");
 
-const createNewCard = async () => {
+const createNewCard = async (reqData) => {
     const { container } = await client.createContainer(containerSchema);
     container.initialObjects.cardDataMap.set(cardDataKey, cardData);
     const id = await container.attach();
-    renderCardWithFluid(container.initialObjects.cardDataMap, root);
+    renderCardWithFluid(container.initialObjects.cardDataMap, reqData);
     return id;
 }
 
@@ -128,35 +144,6 @@ const loadExistingCard = async (id) => {
     const { container } = await client.getContainer(id, containerSchema);
     renderCardWithFluid(container.initialObjects.cardDataMap, root);
 }
-
-async function start() {
-    if (location.hash) {
-        await loadExistingCard(location.hash.substring(1))
-    } else {
-        const id = await createNewCard();
-        location.hash = id;
-    }
-}
-
-start().catch((error) => console.error(error));
-
-// Define the view
-
-const template = document.createElement("template");
-
-template.innerHTML = `
-  <style>
-    .wrapper { text-align: center }
-    .update { font-size: 30px;}
-    .log { font-size: 20px; padding-top: 50px}
-  </style>
-  <div class="wrapper">
-    <textarea class="data-input" rows="4" cols="50"></textarea> <br/><br/><br/>
-    <button class="update"> Update </button>
-    <div class="card"></card>
-    <div class="log"></div>
-  </div>
-`
 
 const renderCard = (acTemplate, acData, div) => {
     // Create a Template instance from the template payload
@@ -198,18 +185,8 @@ const renderCard = (acTemplate, acData, div) => {
 }
 
 const renderCardWithFluid = (cardData, elem) => {
-    elem.appendChild(template.content.cloneNode(true));
-
-    const dice = elem.querySelector(".dice");
-    const card = elem.querySelector(".card");
-    const updateButton = elem.querySelector(".update");
-    const datatextarea = elem.querySelector(".data-input");
-    const log = elem.querySelector(".log");
-
-    updateButton.onclick = () => {
-        const cardDataObject = JSON.parse(datatextarea.value);
-        cardData.set(cardDataKey, cardDataObject);
-    }
+    const cardDataObject = JSON.parse(elem);
+    cardData.set(cardDataKey, cardDataObject);
 
     // Get the current value of the shared data to update the view whenever it changes.
     const updateCard = () => {
@@ -221,5 +198,4 @@ const renderCardWithFluid = (cardData, elem) => {
 
     // Use the changed event to trigger the rerender whenever the value changes.
     cardData.on("valueChanged", updateCard);
-
 }
