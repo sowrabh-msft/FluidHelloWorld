@@ -185,14 +185,14 @@ const renderCard = (acTemplate, acData, div) => {
 }
 
 const renderCardWithFluid = (cardData, elem) => {
-    const cardDataObject = JSON.parse(elem);
-    cardData.set(cardDataKey, cardDataObject);
+    //const cardDataObject = JSON.parse(elem);
+    cardData.set(cardDataKey, elem);
 
     // Get the current value of the shared data to update the view whenever it changes.
     const updateCard = () => {
         const cardDataValue = cardData.get(cardDataKey);
         console.log(cardDataValue);
-        renderCard(cardJson, cardDataValue, card);
+        renderCard(cardJson, cardDataValue, elem);
     };
     updateCard();
 
