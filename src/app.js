@@ -32,7 +32,7 @@ const cardJson = {
     "body": [
         {
             "type": "TextBlock",
-            "text": "${city}",
+            "text": "Mumbai123",
             "size": "Large",
             "isSubtle": true,
             "wrap": true
@@ -107,119 +107,21 @@ const cardJson = {
     ]
 };
 
-const cardData = {
-    "city": "Hyderabad, Telangana"
-}
+
 
 const containerSchema = {
     initialObjects: { cardDataMap: SharedMap }
 };
-const root = document.getElementById("content");
 
-const createNewCard = async () => {
-    const { container } = await client.createContainer(containerSchema);
-    container.initialObjects.cardDataMap.set(cardDataKey, cardData);
-    const id = await container.attach();
-    renderCardWithFluid(container.initialObjects.cardDataMap, root);
-    return id;
-}
-
-const loadExistingCard = async (id) => {
-    const { container } = await client.getContainer(id, containerSchema);
-    renderCardWithFluid(container.initialObjects.cardDataMap, root);
-}
 
 async function start() {
-    if (location.hash) {
-        await loadExistingCard(location.hash.substring(1))
-    } else {
-        const id = await createNewCard();
-        location.hash = id;
+    const { container } = await client.getContainer("42a4e660-c3ac-499f-89e6-bcc1fe97a416", containerSchema);
+    const cardDataNew = {
+        "card": cardJson,
+        "version": Date.now()
     }
+    const data = container.initialObjects.cardDataMap.get(cardDataKey);
+    console.log(data);
+    //container.initialObjects.cardDataMap.set(cardDataKey, cardDataNew);
 }
-
 start().catch((error) => console.error(error));
-
-// Define the view
-
-const template = document.createElement("template");
-
-template.innerHTML = `
-  <style>
-    .wrapper { text-align: center }
-    .update { font-size: 30px;}
-    .log { font-size: 20px; padding-top: 50px}
-  </style>
-  <div class="wrapper">
-    <textarea class="data-input" rows="4" cols="50"></textarea> <br/><br/><br/>
-    <button class="update"> Update </button>
-    <div class="card"></card>
-    <div class="log"></div>
-  </div>
-`
-
-const renderCard = (acTemplate, acData, div) => {
-    // Create a Template instance from the template payload
-    var template = new ACData.Template(acTemplate);
-
-    // Create a data binding context, and set its $root property to the
-    // data object to bind the template to
-    var context = {
-        $root: acData
-    };
-
-    // "Expand" the template - this generates the final Adaptive Card,
-    // ready to render
-    var card = template.expand(context);
-
-
-    var adaptiveCard = new AdaptiveCards.AdaptiveCard();
-
-    // Set its hostConfig property unless you want to use the default Host Config
-    // Host Config defines the style and behavior of a card
-    adaptiveCard.hostConfig = new AdaptiveCards.HostConfig({
-        fontFamily: "Segoe UI, Helvetica Neue, sans-serif"
-        // More host config options
-    });
-
-    // Set the adaptive card's event handlers. onExecuteAction is invoked
-    // whenever an action is clicked in the card
-    adaptiveCard.onExecuteAction = function(action) { alert("Ow!"); }
-
-    // Parse the card payload
-    adaptiveCard.parse(card);
-
-    // Render the card to an HTML element:
-    var renderedCard = adaptiveCard.render();
-
-    // And finally insert it somewhere in your page:
-    div.textContent = '';
-    div.appendChild(renderedCard);
-}
-
-const renderCardWithFluid = (cardData, elem) => {
-    elem.appendChild(template.content.cloneNode(true));
-
-    const dice = elem.querySelector(".dice");
-    const card = elem.querySelector(".card");
-    const updateButton = elem.querySelector(".update");
-    const datatextarea = elem.querySelector(".data-input");
-    const log = elem.querySelector(".log");
-
-    updateButton.onclick = () => {
-        const cardDataObject = JSON.parse(datatextarea.value);
-        cardData.set(cardDataKey, cardDataObject);
-    }
-
-    // Get the current value of the shared data to update the view whenever it changes.
-    const updateCard = () => {
-        const cardDataValue = cardData.get(cardDataKey);
-        console.log(cardDataValue);
-        renderCard(cardJson, cardDataValue, card);
-    };
-    updateCard();
-
-    // Use the changed event to trigger the rerender whenever the value changes.
-    cardData.on("valueChanged", updateCard);
-
-}

@@ -18,6 +18,10 @@ module.exports = env => {
 
     return {
         devtool: "inline-source-map",
+        devServer: {
+            inline:true,
+            port: 8081
+          },
         entry: {
             app: "./src/app.js",
         },
@@ -45,9 +49,6 @@ module.exports = env => {
             alias: {
                 vue$: "vue/dist/vue.esm-bundler.js",
             },
-        },
-        devServer: {
-            open: true
         }
     };
 };
